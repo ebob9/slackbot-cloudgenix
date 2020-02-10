@@ -3,12 +3,12 @@ from setuptools import setup
 with open('README.md') as f:
     long_description = f.read()
 
-setup(name='slackbot_cloudgenix',
-      version='0.0.1b1',
+setup(name='slackbot-cloudgenix',
+      version='0.0.1b2',
       description='CloudGenix AppFabric plugin functions for lins05/slackbot.',
       long_description=long_description,
       long_description_content_type='text/markdown',
-      url='https://github.com/ebob9/cloudgenix_slackbot',
+      url='https://github.com/ebob9/slackbot-cloudgenix',
       author='CloudGenix Developer Support',
       author_email='developers@cloudgenix.com',
       license='MIT',
@@ -16,7 +16,7 @@ setup(name='slackbot_cloudgenix',
             'cloudgenix >= 5.2.1b1, < 5.3.1b1',
             'slackbot'
       ],
-      packages=['slackbot_cloudgenix'],
+      packages=['slackbot-cloudgenix'],
       classifiers=[
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",

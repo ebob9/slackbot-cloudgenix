@@ -1,9 +1,9 @@
 # CloudGenix Slackbot (Preview)
-[![image](https://img.shields.io/pypi/v/cloudgenix_slackbot.svg)](https://pypi.org/project/cloudgenix_slackbot/)
-[![image](https://img.shields.io/pypi/pyversions/cloudgenix_slackbot.svg)](https://pypi.org/project/cloudgenix_slackbot/)
-[![Downloads](https://pepy.tech/badge/cloudgenix_slackbot)](https://pepy.tech/project/cloudgenix_slackbot)
-[![License: MIT](https://img.shields.io/pypi/l/cloudgenix_slackbot.svg?color=brightgreen)](https://pypi.org/project/cloudgenix_slackbot/)
-[![GitHub issues open](https://img.shields.io/github/issues/ebob9/cloudgenix_slackbot.svg)](https://github.com/ebob9/cloudgenix_slackbot/issues)
+[![image](https://img.shields.io/pypi/v/slackbot-cloudgenix.svg)](https://pypi.org/project/slackbot-cloudgenix/)
+[![image](https://img.shields.io/pypi/pyversions/slackbot-cloudgenix.svg)](https://pypi.org/project/slackbot-cloudgenix/)
+[![Downloads](https://pepy.tech/badge/slackbot-cloudgenix)](https://pepy.tech/project/slackbot-cloudgenix)
+[![License: MIT](https://img.shields.io/pypi/l/slackbot-cloudgenix.svg?color=brightgreen)](https://pypi.org/project/slackbot-cloudgenix/)
+[![GitHub issues open](https://img.shields.io/github/issues/ebob9/slackbot-cloudgenix.svg)](https://github.com/ebob9/slackbot-cloudgenix/issues)
 
 CloudGenix AppFabric plugin functions for lins05/slackbot.
 
@@ -24,7 +24,7 @@ TBD
 MIT
 
 #### Installation:
- - **PIP:** `pip install cloudgenix_slackbot`. After install, configure cloudgenix_slackbot as plugin
+ - **PIP:** `pip install slackbot-cloudgenix`. After install, configure slackbot-cloudgenix as plugin
 
 ### Examples of usage:
 
@@ -34,4 +34,5 @@ MIT
 #### Version
 | Version | Build | Changes |
 | ------- | ----- | ------- |
+| **0.0.1** | **b2** | Fix `-`/`_` for pypi/PEP8 |
 | **0.0.1** | **b1** | Placeholder Release. |
