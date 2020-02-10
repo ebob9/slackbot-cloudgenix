@@ -16,7 +16,7 @@ setup(name='slackbot-cloudgenix',
             'cloudgenix >= 5.2.1b1, < 5.3.1b1',
             'slackbot'
       ],
-      packages=['slackbot-cloudgenix'],
+      packages=['slackbot_cloudgenix'],
       classifiers=[
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",
