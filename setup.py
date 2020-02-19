@@ -4,17 +4,22 @@ with open('README.md') as f:
     long_description = f.read()
 
 setup(name='slackbot-cloudgenix',
-      version='0.0.1b2',
+      version='0.5.0b2',
       description='CloudGenix AppFabric plugin functions for lins05/slackbot.',
       long_description=long_description,
       long_description_content_type='text/markdown',
       url='https://github.com/ebob9/slackbot-cloudgenix',
-      author='CloudGenix Developer Support',
-      author_email='developers@cloudgenix.com',
+      author='Aaron Edwards',
+      author_email='cloudgenix-slackbot@ebob9.com',
       license='MIT',
       install_requires=[
             'cloudgenix >= 5.2.1b1, < 5.3.1b1',
-            'slackbot'
+            'cloudgenix_idname >= 2.0.0',
+            'slackbot',
+            'tabulate',
+            'idna',
+            'fuzzywuzzy',
+            'pandas'
       ],
       packages=['slackbot_cloudgenix'],
       classifiers=[

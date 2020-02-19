@@ -1,0 +1,26 @@
+###
+### Slackbot general settings
+###
+
+# Slack API token to send/rcv messages
+API_TOKEN = "<YOUR SLACK API TOKEN HERE>"
+
+# Plugins - add Slackbot CloudGenix
+PLUGINS = [
+    'slackbot_cloudgenix',
+]
+
+# Errors / crashes, send to channel name
+ERRORS_TO = 'bot-debugging-channel'
+
+
+###
+### CloudGenix Related items
+###
+
+# Default reply
+DEFAULT_REPLY = "Hello! I didn't understand you. Sorry!"
+
+# CloudGenix AUTH token - minimum 'view_only', generate from CloudGenix Portal -> System Administration -> AUTH_TOKEN
+# NOTE - this is a very long string! please quote!
+CLOUDGENIX_AUTH_TOKEN = '<SUPER LONG CLOUDGENIX AUTH_TOKEN>'
