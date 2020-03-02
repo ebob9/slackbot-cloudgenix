@@ -4,7 +4,7 @@ with open('README.md') as f:
     long_description = f.read()
 
 setup(name='slackbot-cloudgenix',
-      version='0.5.0b2',
+      version='0.5.1b1',
       description='CloudGenix AppFabric plugin functions for lins05/slackbot.',
       long_description=long_description,
       long_description_content_type='text/markdown',

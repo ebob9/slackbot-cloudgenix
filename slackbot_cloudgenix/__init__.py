@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import logging
 import sys
 import os
@@ -16,6 +17,8 @@ from .sites import showsites
 from .topology import render_topology, render_site_app_paths, render_site_media_paths
 from .apps import get_appdefs
 from .helpers import update_id2n_dicts_delta, update_id2n_dicts_slow
+from .health import site_health_header, site_health_alarms, site_health_alerts, site_health_links, site_health_dns, \
+    site_health_cloud
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +26,10 @@ logger = logging.getLogger(__name__)
 CGX_API_ERROR_MSG = "Sorry, having problems communicating with CloudGenix. Please contact my support."
 GOOD_RESPONSE = 'white_check_mark'
 BAD_RESPONSE = 'x'
+POOR_RESPONSE = 'red_circle'
+NO_RESPONSE = 'white_circle'
+BEYOND_GOOD_RESPONSE = 'large_blue_circle'
+WARNING_RESPONSE = 'warning'
 
 # Check config file for AUTH_TOKEN, Controller, ssl_verify, add in cwd.
 sys.path.append(os.getcwd())
@@ -97,6 +104,42 @@ global_id2n = update_id2n_dicts_slow(idname)
 logger.warning("ID->Name cache successfully updated.")
 
 
+class CgxParseforRaw(object):
+    """
+    Class to allow using raw
+    """
+    Slacker = None
+    SlackClient = None
+    self_data = None
+    self_id = None
+    message_body = None
+    channel_id = None
+    source_team_id = None
+    user_team_id = None
+    user_id = None
+    team_id = None
+    event_ts = None
+    ts = None
+
+    def __init__(self, message):
+        """
+        Parse message and populate the object with needed items.
+        :param message: Slackbot Messsage.
+        """
+        self.SlackClient = message._client
+        self.Slacker = self.SlackClient.webapi
+        self.self_data = message._client.login_data.get('self', {})
+        self.self_id = self.self_data.get('id')
+        self.message_body = message._body
+        self.channel_id = self.message_body.get('channel')
+        self.source_team_id = self.message_body.get('source_team')
+        self.user_team_id = self.message_body.get('user_team')
+        self.user_id = self.message_body.get('user')
+        self.team_id = self.message_body.get('team')
+        self.event_ts = self.message_body.get('event_ts')
+        self.ts = self.message_body.get('ts')
+
+
 def log_message_env(message):
     """
     log message details for debugging
@@ -164,6 +207,83 @@ def help(message):
 # @respond_to('I love you')
 # def love(message):
 #     message.reply('I love you too!')
+
+
+@respond_to('show health (.*)', re.IGNORECASE)
+def show_site_health(message, site_string):
+    log_message_env(message)
+    if sdk.tenant_id:
+        # get list of sites.
+        sites_n2id = idname.generate_sites_map(key_val='name', value_val='id')
+        name_list = sites_n2id.keys()
+
+        # fuzzy match
+        choice, percent = process.extractOne(site_string, name_list)
+        # perfect match, just get..
+        if percent > 50:
+            message.react(GOOD_RESPONSE)
+            # if not 100%
+            if percent != 100:
+                message.reply("I think you meant *{0}*, looking that up..".format(choice))
+            raw_api = CgxParseforRaw(message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(site_health_header(sites_n2id[choice], sdk, idname))
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(site_health_alarms(sites_n2id[choice], sdk, idname))
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(site_health_alerts(sites_n2id[choice], sdk, idname))
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            # links gives back 3 blocks message
+            blocks1, blocks2, blocks3 = site_health_links(sites_n2id[choice], sdk, idname)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(blocks1)
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(blocks2)
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(blocks3)
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(site_health_dns(sites_n2id[choice], sdk, idname))
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+            constructed_raw_message = {
+                "channel": raw_api.channel_id,
+                "as_user": raw_api.self_id,
+                "blocks": json.dumps(site_health_cloud(sites_n2id[choice], sdk, idname))
+            }
+            raw_api.Slacker.chat.post('chat.postMessage', data=constructed_raw_message)
+        # not even close..
+        else:
+            message.react(BAD_RESPONSE)
+            message.reply("I couldn't find a site that matched what you asked for ({0}). Try asking me about "
+                          "\"What sites are there?\".".format(site_string))
+    else:
+        message.react(BAD_RESPONSE)
+        message.reply(CGX_API_ERROR_MSG)
 
 
 @respond_to('show site (.*)', re.IGNORECASE)
@@ -470,6 +590,170 @@ def customer(message):
 def working(message):
     log_message_env(message)
     message.reply('I am alive.', in_thread=True)
+    for attr, value in message.__dict__.items():
+        print(attr, cloudgenix.jdout(value))
+    for attr, value in message._client.__dict__.items():
+        print(attr, cloudgenix.jdout(value))
+    for attr, value in message._plugins.__dict__.items():
+        print(attr, cloudgenix.jdout(value))
+    # raw_send = message._client
+    # channel = message._body.get('channel')
+    # user_id = message._client.login_data.get('self', {}).get('id')
+
+    raw_api = CgxParseforRaw(message)
+
+    print(f"USER-ID: {raw_api.self_id}")
+
+    blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "You have a new request:\n*<fakeLink.toEmployeeProfile.com|Fred Enriquez - New device request>*"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Type:*\nComputer (laptop)"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*When:*\nSubmitted Aut 10"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Reason:*\nAll vowel keys aren't working."
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
+                }
+            ]
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": True,
+                        "text": "Approve"
+                    },
+                    "style": "primary",
+                    "value": "click_me_123"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "emoji": True,
+                        "text": "Deny"
+                    },
+                    "style": "danger",
+                    "value": "click_me_123"
+                }
+            ]
+        }
+    ]
+
+    blocks2 = [
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "title",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "What do you want to ask of the world?"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Title"
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "multi_channels_select",
+                    "action_id": "channels",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Where should the poll be sent?"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Channel(s)"
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "option_1",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "First option"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Option 1"
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "option_2",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "How many options do they need, really?"
+                    }
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Option 2"
+                }
+            }
+        ]
+    constructed_message1 = {
+        "channel": raw_api.channel_id,
+        "as_user": raw_api.self_id,
+        "blocks": json.dumps(blocks)
+    }
+
+    constructed_message2 = {
+        "type": "modal",
+        "title": {
+            "type": "plain_text",
+            "text": "My App",
+            "emoji": True
+        },
+        "submit": {
+            "type": "plain_text",
+            "text": "Submit",
+            "emoji": True
+        },
+        "close": {
+            "type": "plain_text",
+            "text": "Cancel",
+            "emoji": True
+        },
+        "blocks": json.dumps(blocks2)
+    }
+
+    raw_api.Slacker.chat.post('chat.postMessage', data=constructed_message1)
+
     choice = random.randrange(10)
     if choice <= 5:
         message.react('zombie')
