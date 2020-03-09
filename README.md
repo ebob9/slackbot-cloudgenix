@@ -57,5 +57,6 @@ CloudGenix BotAPP  10:21 PM
 #### Version
 | Version | Build | Changes |
 | ------- | ----- | ------- |
+| **0.5.1** | **b1** | Update to fix large site response, add initial site health prototype |
 | **0.5.0** | **b1** | Initial Release |
 | **0.0.1** | **b1** | Placeholder Release |

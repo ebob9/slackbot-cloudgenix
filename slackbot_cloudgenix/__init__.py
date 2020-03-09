@@ -31,6 +31,8 @@ NO_RESPONSE = 'white_circle'
 BEYOND_GOOD_RESPONSE = 'large_blue_circle'
 WARNING_RESPONSE = 'warning'
 
+NEED_TO_CHUNK_LENGTH = 20
+
 # Check config file for AUTH_TOKEN, Controller, ssl_verify, add in cwd.
 sys.path.append(os.getcwd())
 try:
@@ -384,7 +386,24 @@ def sites(message):
     if sdk.tenant_id:
         output_message = showsites(None, sdk, global_id2n)
         message.react(GOOD_RESPONSE)
-        message.reply("```" + str(output_message) + "```")
+        output_lines = output_message.splitlines()
+        if len(output_lines) <= NEED_TO_CHUNK_LENGTH:
+            # enough for single message:
+            message.reply("```" + str(output_message) + "```")
+        else:
+            # too long, chunk into NEED_TO_CHUNK_LENGTH entries.
+            # first 2 lines are header.
+            header_list = [output_lines.pop(0), output_lines.pop(0)]
+            chunked_output = [output_lines[i:i + NEED_TO_CHUNK_LENGTH] for i in range(0, len(output_lines),
+                                                                                      NEED_TO_CHUNK_LENGTH)]
+
+            for output_chunk in chunked_output:
+                # add header to output lines
+                output_line = list(header_list)
+                output_line.extend(output_chunk)
+                output_string = "\n".join(output_line)
+                message.reply("```" + str(output_string) + "```")
+
         #
         # attachments = [
         #     {
@@ -600,159 +619,159 @@ def working(message):
     # channel = message._body.get('channel')
     # user_id = message._client.login_data.get('self', {}).get('id')
 
-    raw_api = CgxParseforRaw(message)
-
-    print(f"USER-ID: {raw_api.self_id}")
-
-    blocks = [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "You have a new request:\n*<fakeLink.toEmployeeProfile.com|Fred Enriquez - New device request>*"
-            }
-        },
-        {
-            "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Type:*\nComputer (laptop)"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "*When:*\nSubmitted Aut 10"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "*Reason:*\nAll vowel keys aren't working."
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
-                }
-            ]
-        },
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "emoji": True,
-                        "text": "Approve"
-                    },
-                    "style": "primary",
-                    "value": "click_me_123"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "emoji": True,
-                        "text": "Deny"
-                    },
-                    "style": "danger",
-                    "value": "click_me_123"
-                }
-            ]
-        }
-    ]
-
-    blocks2 = [
-            {
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "title",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "What do you want to ask of the world?"
-                    }
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Title"
-                }
-            },
-            {
-                "type": "input",
-                "element": {
-                    "type": "multi_channels_select",
-                    "action_id": "channels",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Where should the poll be sent?"
-                    }
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Channel(s)"
-                }
-            },
-            {
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "option_1",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "First option"
-                    }
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Option 1"
-                }
-            },
-            {
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "option_2",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "How many options do they need, really?"
-                    }
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Option 2"
-                }
-            }
-        ]
-    constructed_message1 = {
-        "channel": raw_api.channel_id,
-        "as_user": raw_api.self_id,
-        "blocks": json.dumps(blocks)
-    }
-
-    constructed_message2 = {
-        "type": "modal",
-        "title": {
-            "type": "plain_text",
-            "text": "My App",
-            "emoji": True
-        },
-        "submit": {
-            "type": "plain_text",
-            "text": "Submit",
-            "emoji": True
-        },
-        "close": {
-            "type": "plain_text",
-            "text": "Cancel",
-            "emoji": True
-        },
-        "blocks": json.dumps(blocks2)
-    }
-
-    raw_api.Slacker.chat.post('chat.postMessage', data=constructed_message1)
+    # raw_api = CgxParseforRaw(message)
+    #
+    # print(f"USER-ID: {raw_api.self_id}")
+    #
+    # blocks = [
+    #     {
+    #         "type": "section",
+    #         "text": {
+    #             "type": "mrkdwn",
+    #             "text": "You have a new request:\n*<fakeLink.toEmployeeProfile.com|Fred Enriquez - New device request>*"
+    #         }
+    #     },
+    #     {
+    #         "type": "section",
+    #         "fields": [
+    #             {
+    #                 "type": "mrkdwn",
+    #                 "text": "*Type:*\nComputer (laptop)"
+    #             },
+    #             {
+    #                 "type": "mrkdwn",
+    #                 "text": "*When:*\nSubmitted Aut 10"
+    #             },
+    #             {
+    #                 "type": "mrkdwn",
+    #                 "text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
+    #             },
+    #             {
+    #                 "type": "mrkdwn",
+    #                 "text": "*Reason:*\nAll vowel keys aren't working."
+    #             },
+    #             {
+    #                 "type": "mrkdwn",
+    #                 "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
+    #             }
+    #         ]
+    #     },
+    #     {
+    #         "type": "actions",
+    #         "elements": [
+    #             {
+    #                 "type": "button",
+    #                 "text": {
+    #                     "type": "plain_text",
+    #                     "emoji": True,
+    #                     "text": "Approve"
+    #                 },
+    #                 "style": "primary",
+    #                 "value": "click_me_123"
+    #             },
+    #             {
+    #                 "type": "button",
+    #                 "text": {
+    #                     "type": "plain_text",
+    #                     "emoji": True,
+    #                     "text": "Deny"
+    #                 },
+    #                 "style": "danger",
+    #                 "value": "click_me_123"
+    #             }
+    #         ]
+    #     }
+    # ]
+    #
+    # blocks2 = [
+    #         {
+    #             "type": "input",
+    #             "element": {
+    #                 "type": "plain_text_input",
+    #                 "action_id": "title",
+    #                 "placeholder": {
+    #                     "type": "plain_text",
+    #                     "text": "What do you want to ask of the world?"
+    #                 }
+    #             },
+    #             "label": {
+    #                 "type": "plain_text",
+    #                 "text": "Title"
+    #             }
+    #         },
+    #         {
+    #             "type": "input",
+    #             "element": {
+    #                 "type": "multi_channels_select",
+    #                 "action_id": "channels",
+    #                 "placeholder": {
+    #                     "type": "plain_text",
+    #                     "text": "Where should the poll be sent?"
+    #                 }
+    #             },
+    #             "label": {
+    #                 "type": "plain_text",
+    #                 "text": "Channel(s)"
+    #             }
+    #         },
+    #         {
+    #             "type": "input",
+    #             "element": {
+    #                 "type": "plain_text_input",
+    #                 "action_id": "option_1",
+    #                 "placeholder": {
+    #                     "type": "plain_text",
+    #                     "text": "First option"
+    #                 }
+    #             },
+    #             "label": {
+    #                 "type": "plain_text",
+    #                 "text": "Option 1"
+    #             }
+    #         },
+    #         {
+    #             "type": "input",
+    #             "element": {
+    #                 "type": "plain_text_input",
+    #                 "action_id": "option_2",
+    #                 "placeholder": {
+    #                     "type": "plain_text",
+    #                     "text": "How many options do they need, really?"
+    #                 }
+    #             },
+    #             "label": {
+    #                 "type": "plain_text",
+    #                 "text": "Option 2"
+    #             }
+    #         }
+    #     ]
+    # constructed_message1 = {
+    #     "channel": raw_api.channel_id,
+    #     "as_user": raw_api.self_id,
+    #     "blocks": json.dumps(blocks)
+    # }
+    #
+    # constructed_message2 = {
+    #     "type": "modal",
+    #     "title": {
+    #         "type": "plain_text",
+    #         "text": "My App",
+    #         "emoji": True
+    #     },
+    #     "submit": {
+    #         "type": "plain_text",
+    #         "text": "Submit",
+    #         "emoji": True
+    #     },
+    #     "close": {
+    #         "type": "plain_text",
+    #         "text": "Cancel",
+    #         "emoji": True
+    #     },
+    #     "blocks": json.dumps(blocks2)
+    # }
+    #
+    # raw_api.Slacker.chat.post('chat.postMessage', data=constructed_message1)
 
     choice = random.randrange(10)
     if choice <= 5:
